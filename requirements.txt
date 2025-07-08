@@ -1,0 +1,10 @@
+langchain
+PyGithub
+openai
+chromadb
+python-dotenv
+tiktoken
+requests
+beautifulsoup4
+langchain-text-splitters
+numpy
