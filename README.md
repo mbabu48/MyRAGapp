@@ -5,3 +5,4 @@ Here is the Demo:
 
 <video src="./MyRAGAppDemo.mp4" autoplay muted playsinline controls></video>
 
+[▶️ Watch Demo Video](MyRAGAppDemo.mp4)
