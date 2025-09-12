@@ -67,16 +67,16 @@ def main(org_name="aws-samples"):
                     if not os.path.exists(folder_path):
                         os.makedirs(folder_path)  # Use os.makedirs to create nested directories if needed
                     full_file_path = os.path.join(folder_path, file_to_write)
-                    print(f"Writing to file: {full_file_path}")
+                    #print(f"Writing to file: {full_file_path}")
                     try:
-                        with open(full_file_path, "a", encoding="utf-8") as f:
-                            # Write to file as before
-                            file_doc = {
-                                "text": doc.page_content,
-                                "metadata": {"source": source, "org_name": org_name, "repository_name": repository_name, "markdown_file":markdown_file_path, **doc.metadata}
-                            }
-                            f.write(str(file_doc) + "\n\n\n")
-                            # Append the actual document (or dict) to docs for vector store
+                        #with open(full_file_path, "a", encoding="utf-8") as f:
+                        #    # Write to file as before
+                        #    file_doc = {
+                        #        "text": doc.page_content,
+                        #        "metadata": {"source": source, "org_name": org_name, "repository_name": repository_name, "markdown_file":markdown_file_path, **doc.metadata}
+                        #    }
+                        #    f.write(str(file_doc) + "\n\n\n")
+                        #    # Append the actual document (or dict) to docs for vector store
                             docs.append({
                                 "text": doc.page_content,
                                 "metadata": {"source": source, "org_name": org_name, "repository_name": repository_name, "markdown_file":markdown_file_path, **doc.metadata}

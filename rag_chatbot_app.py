@@ -8,9 +8,13 @@ st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 st.title("RAG Chatbot Demo 🤖")
 st.write("Ask questions about your ingested Markdown files!")
 
-# Load config and initialize CoreRAG
 config = load_config()
 core_rag = CoreRAG(config)
+
+# Sidebar: Hybrid Search Weight
+hybrid_weight = st.sidebar.slider("Hybrid Search Weight", 0.0, 1.0, core_rag.hybrid_weight, 0.01)
+core_rag.hybrid_weight = hybrid_weight
+st.sidebar.markdown(f"**Current Hybrid Weight:** {hybrid_weight}")
 
 # Session state for chat history
 if "messages" not in st.session_state:
@@ -103,6 +107,8 @@ if user_input:
                         answer_display = f"{answer}\n\n**References:**\n{refs_md}"
                     else:
                         answer_display = answer
+                # Display hybrid search weight used for this query
+                answer_display += f"\n\n**Hybrid Search Weight Used:** {response.get('hybrid_weight', hybrid_weight)}"
             except Exception as e:
                 answer_display = f"Error: {e}"
                 print(f"Error during query: {e}")

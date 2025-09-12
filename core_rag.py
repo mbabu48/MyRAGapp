@@ -3,18 +3,21 @@ from llm_client import LLMClient
 from typing import List, Dict, Any
 from config import load_config
 
+
 class CoreRAG:
     def __init__(self, config):
         self.llm = LLMClient(config)
         self.vector_store = VectorStore(config)
         self.embedding_model = config.get('EMBEDDING_MODEL', 'text-embedding-3-small')
         self.chat_model = config.get('CHAT_MODEL', 'gpt-4o-mini')
+        self.hybrid_weight = config.get('HYBRID_WEIGHT', 0.5)  # New parameter for hybrid search
 
     def add_documents(self, documents: List[Dict[str, Any]]):
         self.vector_store.add_documents(documents, self.llm, self.embedding_model)
 
     def search_documents(self, query: str, n_results: int = 3) -> List[Dict[str, Any]]:
-        return self.vector_store.search(query, n_results, self.llm, self.embedding_model)
+        # Pass hybrid_weight to vector_store.search
+        return self.vector_store.search(query, n_results, self.llm, self.embedding_model, hybrid_weight=self.hybrid_weight)
 
     def generate_response(self, query: str, context_docs: List[Dict[str, Any]]) -> str:
         context = "\n\n".join([doc['text'] for doc in context_docs])
@@ -27,7 +30,8 @@ class CoreRAG:
         return {
             'question': question,
             'answer': response,
-            'sources': relevant_docs
+            'sources': relevant_docs,
+            'hybrid_weight': self.hybrid_weight  # Optionally expose this
         }
 
     def get_collection_info(self) -> Dict[str, Any]:

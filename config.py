@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+
 def load_config():
     load_dotenv()
     return {
@@ -8,6 +9,7 @@ def load_config():
         'CHROMA_DB_PATH': os.getenv('CHROMA_DB_PATH', './chroma_db'),
         'EMBEDDING_MODEL': os.getenv('EMBEDDING_MODEL', 'text-embedding-3-small'),
         'CHAT_MODEL': os.getenv('CHAT_MODEL', 'gpt-4o-mini'),
-        'GITHUB_TOKEN': os.getenv('GITHUB_TOKEN')
+        'GITHUB_TOKEN': os.getenv('GITHUB_TOKEN'),
+        'HYBRID_WEIGHT': float(os.getenv('HYBRID_WEIGHT', 0.5))  # New parameter for hybrid search
     }
 
