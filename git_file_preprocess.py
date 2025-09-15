@@ -31,9 +31,11 @@ def git_preproc(org_name = "aws-samples") -> list:
 
         markdown_repos = []
         markdown_files = []
+        keyword = "textract"
+        filtered_repos = [repo for repo in org.get_repos() if keyword.lower() in (repo.name.lower() + repo.description.lower() if repo.description else "")]
 
         # Iterate through all repositories in the organization
-        for repo in org.get_repos()[:5]:  # Limit to first 5 repositories for performance
+        for repo in filtered_repos:  # Limit to first 5 repositories for performance
             Contents = repo.get_contents('')
             while Contents:
                 content = Contents.pop(0)

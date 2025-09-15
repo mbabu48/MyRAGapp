@@ -13,11 +13,11 @@ class CoreRAG:
         self.hybrid_weight = config.get('HYBRID_WEIGHT', 0.5)  # New parameter for hybrid search
 
     def add_documents(self, documents: List[Dict[str, Any]]):
-        self.vector_store.add_documents(documents, self.llm, self.embedding_model)
+        self.vector_store.add_documents(documents, self.llm, self.embedding_model,self.chat_model)
 
     def search_documents(self, query: str, n_results: int = 3) -> List[Dict[str, Any]]:
         # Pass hybrid_weight to vector_store.search
-        return self.vector_store.search(query, n_results, self.llm, self.embedding_model, hybrid_weight=self.hybrid_weight)
+        return self.vector_store.search(query, n_results, self.llm, self.embedding_model, self.chat_model, hybrid_weight=self.hybrid_weight)
 
     def generate_response(self, query: str, context_docs: List[Dict[str, Any]]) -> str:
         context = "\n\n".join([doc['text'] for doc in context_docs])

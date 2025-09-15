@@ -2,6 +2,9 @@ import chromadb
 from typing import List, Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
+import joblib
+from scipy import sparse
+import os
 
 class VectorStore:
     def __init__(self, config):
@@ -11,17 +14,37 @@ class VectorStore:
             self.collection = self.chroma_client.get_collection(name=self.collection_name)
         except:
             self.collection = self.chroma_client.create_collection(name=self.collection_name)
-        self.tfidf_vectorizer = TfidfVectorizer()
-        self.sparse_matrix = None
-        self.texts = []
+        self.storage_dir     = config.get('VECTOR_STORE_PATH', './vector_store')
+        os.makedirs(self.storage_dir, exist_ok=True)
+        self.vectorizer_path = os.path.join(self.storage_dir, 'vectorizer.joblib')
+        self.matrix_path     = os.path.join(self.storage_dir, 'tfidf_matrix.npz')
+        self.texts_path      = os.path.join(self.storage_dir, 'texts.joblib')
 
-    def add_documents(self, documents: List[Dict[str, Any]], llm, embedding_model):
+        # --- Load existing state or initialize fresh ---
+        if os.path.exists(self.vectorizer_path):
+            self.tfidf_vectorizer = joblib.load(self.vectorizer_path)
+            self.sparse_matrix     = sparse.load_npz(self.matrix_path)
+            self.texts             = joblib.load(self.texts_path)
+            if self.sparse_matrix is None and self.texts:
+                self.sparse_matrix = self.tfidf_vectorizer.fit_transform(self.texts)
+        else:
+            self.tfidf_vectorizer = TfidfVectorizer()
+            self.sparse_matrix     = None
+            self.texts             = []
+
+    def _save_state(self):
+        """Persist vectorizer, sparse matrix, and texts to disk."""
+        joblib.dump(self.tfidf_vectorizer, self.vectorizer_path)
+        sparse.save_npz(self.matrix_path, self.sparse_matrix)
+        joblib.dump(self.texts, self.texts_path)
+
+    def add_documents(self, documents: List[Dict[str, Any]], llm, embedding_model, chat_model):
         texts, embeddings, metadatas, ids = [], [], [], []
         for i, doc in enumerate(documents):
             text = doc['text']
             metadata = doc.get('metadata', {})
             doc_id = doc.get('id', f"doc_{i}")
-            embedding = llm.create_embedding(text, embedding_model)
+            embedding = llm.create_embedding(text, embedding_model, chat_model)
             texts.append(text)
             embeddings.append(embedding)
             metadatas.append(metadata)
@@ -31,10 +54,12 @@ class VectorStore:
         self.sparse_matrix = self.tfidf_vectorizer.fit_transform(self.texts)
         # Store both dense and sparse vectors in ChromaDB
         self.collection.add(documents=texts, embeddings=embeddings, metadatas=metadatas, ids=ids)
+        # Persist updated vectorizer, sparse matrix, and texts
+        self._save_state()
 
-    def search(self, query: str, n_results: int, llm, embedding_model, hybrid_weight: float = 0.5) -> List[Dict[str, Any]]:
+    def search(self, query: str, n_results: int, llm, embedding_model, chat_model, hybrid_weight: float = 0.5) -> List[Dict[str, Any]]:
         # Dense embedding for query
-        query_embedding = llm.create_embedding(query, embedding_model)
+        query_embedding = llm.create_embedding(query, embedding_model, chat_model)
         # Sparse vector for query
         query_sparse = self.tfidf_vectorizer.transform([query])
         # ChromaDB hybrid search (if supported)

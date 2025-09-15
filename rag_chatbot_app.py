@@ -2,6 +2,7 @@ import streamlit as st
 from core_rag import CoreRAG
 from config import load_config
 import re
+import json
 
 st.set_page_config(page_title="RAG Chatbot", page_icon="🤖", layout="wide")
 
@@ -71,13 +72,16 @@ if user_input:
         with st.spinner("Thinking..."):
             try:
                 response = core_rag.query(user_input)
-                print(f"Response from core_rag: {response}")
+                pretty_response = json.dumps(response, indent=4)
+                print(f"Response from core_rag: {pretty_response}")
                 answer = response.get("answer", "No answer found.")
                 print(f"Answer: {answer}")
                 sources = response.get("sources", [])
                 references = []
                 for idx, metadata in enumerate(sources, 1):
                     meta = metadata.get("metadata", {})
+                    print(meta)
+                    print(metadata)
                     org_name = meta.get("org_name", "unknown_org")
                     repo_name = meta.get("repository_name", "unknown_repo")
                     file_path = meta.get("markdown_file", "unknown_file")

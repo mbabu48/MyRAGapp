@@ -99,3 +99,5 @@ if __name__ == "__main__":
     main(org_name="aws-samples")
     """    Main function to execute the GitHub Markdown file preprocessing and LangChain splitting.
     """
+    with open("success.txt", "w") as f:
+        f.write("success\n")
